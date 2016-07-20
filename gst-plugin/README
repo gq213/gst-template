@@ -32,3 +32,24 @@ to places where you need to edit the code.
 
 You still need to adjust the Makefile.am.
 
+
+1.
+git clone git://anongit.freedesktop.org/gstreamer/gst-template.git
+
+2.
+cd gst-template/gst-plugin/src
+../tools/make_element wma
+
+3.
+修改gst-plugin/src/Makefile.am文件
+
+4.
+cd ..
+./autogen.sh
+
+5.
+make
+
+6.
+gst-inspect-1.0 src/.libs/libgstwma.so
+
