@@ -53,3 +53,7 @@ make
 6.
 gst-inspect-1.0 src/.libs/libgstwma.so
 
+
+wma
+gcc bitstream.c fft.c mdct.c wmadeci.c wmafixed.c -Wall -fPIC -shared -o libtest.so
+
