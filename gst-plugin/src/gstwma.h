@@ -2,7 +2,7 @@
  * GStreamer
  * Copyright (C) 2005 Thomas Vander Stichele <thomas@apestaart.org>
  * Copyright (C) 2005 Ronald S. Bultje <rbultje@ronald.bitfreak.net>
- * Copyright (C) 2016 qiang <<user@hostname.org>>
+ * Copyright (C) 2016 gq213 <gaoqiang1211@gmail.com>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -47,6 +47,10 @@
 #define __GST_WMA_H__
 
 #include <gst/gst.h>
+#include <gst/tag/tag.h>
+#include <gst/audio/gstaudiodecoder.h>
+
+#include "libwma/wmadec.h"
 
 G_BEGIN_DECLS
 
@@ -67,19 +71,21 @@ typedef struct _GstwmaClass GstwmaClass;
 
 struct _Gstwma
 {
-  GstElement element;
+  GstAudioDecoder element;
 
-  GstPad *sinkpad, *srcpad;
+  WMADecodeContext *context;
 
-  gboolean silent;
+  gint rate, channels;
+
+  gint rate_last, channels_last;
 };
 
 struct _GstwmaClass 
 {
-  GstElementClass parent_class;
+  GstAudioDecoderClass parent_class;
 };
 
-GType gst_wma_get_type (void);
+GType		gst_wma_get_type (void);
 
 G_END_DECLS
 

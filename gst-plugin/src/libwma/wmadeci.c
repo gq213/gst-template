@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "wmadec.h"
 #include "asf.h"
 #include "bitstream.h"
@@ -1562,13 +1563,12 @@ void libwma_decode_end(WMADecodeContext *ctx)
 }
 
 int libwma_decode_superframe(WMADecodeContext *ctx,
-                             int16_t *samples, int *data_size,
+                             int16_t **samples, int *data_size,
                              const uint8_t *buf, int buf_size)
 {
     WMADecodeContextPrivate *s = ctx->priv_data;
     int nb_frames, bit_offset, i, pos, len;
     uint8_t *q;
-    int16_t *samples_start = samples;
 
     if(buf_size==0){
         s->last_superframe_len = 0;
@@ -1584,8 +1584,36 @@ int libwma_decode_superframe(WMADecodeContext *ctx,
         /* read super frame header */
         skip_bits(&s->gb, 4); /* super frame index */
         nb_frames = get_bits(&s->gb, 4) - 1;
-        if(nb_frames<0) return -1;
 
+		if(nb_frames>0)
+		{
+			*data_size = (nb_frames + 1) * s->frame_len * s->ectx->nb_channels * 2;
+		}
+		else
+		{
+			*data_size = 1 * s->frame_len * s->ectx->nb_channels * 2;
+			printf("nb_frames error(%d)!!!\n", nb_frames);
+			nb_frames = 0;
+		}
+    } else {
+		*data_size = 1 * s->frame_len * s->ectx->nb_channels * 2;
+		nb_frames = 1;
+    }
+
+	//printf("*data_size=%d, nb_frames=%d, s->frame_len=%d\n", *data_size, nb_frames, s->frame_len);
+
+	//malloc
+	int16_t *samples_start = malloc(*data_size);
+	if(samples_start == NULL)
+	{
+		printf("malloc error!!!\n");
+		return -1;
+	}
+	*samples = samples_start;
+
+	//printf("samples_start(%p), *samples(%p).\n", samples_start, *samples);
+
+    if (s->use_bit_reservoir) {
         bit_offset = get_bits(&s->gb, s->byte_offset_bits + 3);
 
         if (s->last_superframe_len > 0) {
@@ -1611,9 +1639,9 @@ int libwma_decode_superframe(WMADecodeContext *ctx,
                 skip_bits(&s->gb, s->last_bitoffset);
             /* this frame is stored in the last superframe and in the
                current one */
-            if (wma_decode_frame(s, samples) < 0)
+            if (wma_decode_frame(s, samples_start) < 0)
                 goto fail;
-            samples += s->ectx->nb_channels * s->frame_len;
+            samples_start += s->ectx->nb_channels * s->frame_len;
         }
 
         /* read each frame starting from bit_offset */
@@ -1625,9 +1653,9 @@ int libwma_decode_superframe(WMADecodeContext *ctx,
 
         s->reset_block_lengths = 1;
         for(i=0;i<nb_frames;i++) {
-            if (wma_decode_frame(s, samples) < 0)
+            if (wma_decode_frame(s, samples_start) < 0)
                 goto fail;
-            samples += s->ectx->nb_channels * s->frame_len;
+            samples_start += s->ectx->nb_channels * s->frame_len;
         }
 
         /* we copy the end of the frame in the last frame buffer */
@@ -1642,16 +1670,20 @@ int libwma_decode_superframe(WMADecodeContext *ctx,
         memcpy(s->last_superframe, buf + pos, len);
     } else {
         /* single frame decode */
-        if (wma_decode_frame(s, samples) < 0)
+        if (wma_decode_frame(s, samples_start) < 0)
             goto fail;
-        samples += s->ectx->nb_channels * s->frame_len;
+        samples_start += s->ectx->nb_channels * s->frame_len;
     }
 
 //av_log(NULL, AV_LOG_ERROR, "%d %d %d %d outbytes:%d eaten:%d\n", s->frame_len_bits, s->block_len_bits, s->frame_len, s->block_len,        (int8_t *)samples - (int8_t *)data, s->ectx->block_align);
-
-    *data_size = (int8_t *)samples - (int8_t *)samples_start;
+	//printf("decode ok.\n");
+    //*data_size = (int8_t *)samples_start - (int8_t *)samples;
     return s->ectx->block_align;
  fail:
+	printf("free...\n");
+	//free
+	free(*samples);
+	printf("decode fail!!!\n");
     /* when error, we reset the bit reservoir */
     s->last_superframe_len = 0;
     return -1;

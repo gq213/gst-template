@@ -37,6 +37,6 @@ typedef struct WMADecodeContext
 int libwma_decode_init(WMADecodeContext* ctx);
 void libwma_decode_end(WMADecodeContext* ctx);
 int libwma_decode_superframe(WMADecodeContext* ctx,
-                             int16_t *samples, int *data_size,
+                             int16_t **samples, int *data_size,
                              const uint8_t *buf, int buf_size);
 #endif
