@@ -48,9 +48,12 @@ cd ..
 ./autogen.sh
 
 5.
-make
+./configure
 
 6.
+make
+
+7.
 gst-inspect-1.0 src/.libs/libgstwma.so
 
 

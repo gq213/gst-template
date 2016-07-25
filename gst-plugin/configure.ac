@@ -2,20 +2,23 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl TODO: fill in your package name and package version here
-AC_INIT([gst-plugins-wma],[1.0.0])
+AC_INIT([GStreamer Wma Plug-ins],[1.4.5],[gaoqiang1211@gmail.com],[gst-plugins-wma],[gaoqiang1211@gmail.com])
 
 dnl required versions of gstreamer and plugins-base
 GST_REQUIRED=1.0.0
 GSTPB_REQUIRED=1.0.0
 
-AC_CONFIG_SRCDIR([src/gstplugin.c])
+AC_CONFIG_SRCDIR([src/gstwma.c])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
-AM_INIT_AUTOMAKE([1.10])
+AM_INIT_AUTOMAKE([1.10 subdir-objects])
 
 dnl enable mainainer mode by default
 AM_MAINTAINER_MODE([enable])
+
+dnl sets host_* variables
+AC_CANONICAL_HOST
 
 dnl check for tools (compiler etc.)
 AC_PROG_CC

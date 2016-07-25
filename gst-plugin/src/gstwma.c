@@ -335,4 +335,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     wma,
     "Rockbox-based WMA decoder library",
-    plugin_init, "1.4.5", "GPL", "null", "null")
+    plugin_init, VERSION, "GPL", PACKAGE_NAME, PACKAGE_URL)
